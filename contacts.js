@@ -1,14 +1,14 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-const contactsPath = path.join(process.cwd(), "contacts.json");
+const contactsPath = path.join("db", "contacts.json");
 
 async function listContacts() {
   try {
     const data = await fs.readFile(contactsPath, "utf-8");
     return JSON.parse(data);
   } catch (error) {
-    return [];
+    console.log(error);
   }
 }
 
@@ -18,7 +18,7 @@ async function getContactById(contactId) {
     const contacts = JSON.parse(data);
     return contacts.find((contact) => contact.id === contactId) || null;
   } catch (error) {
-    return null;
+    console.log(error);
   }
 }
 
@@ -26,13 +26,17 @@ async function removeContact(contactId) {
   try {
     const data = await fs.readFile(contactsPath, "utf-8");
     const contacts = JSON.parse(data);
+    const removeContacts = contacts.find((contact) => contactId === contactId);
+    if (!removeContacts) {
+      return null;
+    }
     const updatedContacts = contacts.filter(
-      (contact) => contact.id !== contactId
+      (contact) => contact.id !== removeContacts.id
     );
-    await fs.writeFile(contactsPath, JSON.stringify(updatedContacts, null, 2));
-    return updatedContacts.find((contact) => contact.id === contactId);
+    await fs.writeFile(contactsPath, JSON.stringify(updatedContacts));
+    return removeContacts;
   } catch (error) {
-    return null;
+    console.log(error);
   }
 }
 
@@ -45,7 +49,7 @@ async function addContact(name, email, phone) {
     await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return newContacts;
   } catch (error) {
-    return null;
+    console.log(error);
   }
 }
 
